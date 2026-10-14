@@ -19,3 +19,10 @@ harness/out/
 .claude/settings.local.json
 .DS_Store
 *.log
+
+# Packaged skills and archives never belong in the repo
+*.skill
+*.zip
+*.tgz
+*.tar
+*.tar.gz
