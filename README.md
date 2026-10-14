@@ -1,14 +1,20 @@
-# AI Homepage
+# The Morning Tab
 
-**A new tab that reads the internet for you.**
+**All the news that fits your history.**
 
-AI Homepage replaces Chrome's new-tab page with one that's written for you. An
-agent looks at what you've actually been browsing, opens the pages you follow
-(signed in as you), and writes a fresh homepage from what it finds there. It
-rebuilds itself in the background, so each new tab is up to date.
+> Extended from [ai-newtab](https://github.com/ThariqS/ai-newtab) by [Thariq](https://github.com/ThariqS) ([@trq212](https://x.com/trq212)), MIT licensed. See [CREDITS.md](./CREDITS.md).
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-10B981.svg)](./LICENSE)
+[![CI](https://github.com/mejba13/themorningtab/actions/workflows/ci.yml/badge.svg)](https://github.com/mejba13/themorningtab/actions/workflows/ci.yml)
+[![Website](https://img.shields.io/badge/Website-themorningtab.ai-0A66C2.svg)](https://themorningtab.ai)
+
+The Morning Tab replaces Chrome's new-tab page with a front page that's written
+for you. An agent looks at what you've actually been browsing, opens the pages you
+follow (signed in as you), and writes a fresh homepage from what it finds there,
+then rebuilds it in the background so each new tab is up to date.
 
 ![An example homepage in a morning-newspaper style](docs/preview.png)
-<sub>Illustration. Your homepage is built from your own browsing, so its stories will be different.</sub>
+<sub>Illustration from the upstream project. Your homepage is built from your own browsing, so its stories will be different.</sub>
 
 A morning newspaper is just one look. You can describe any look and the next build
 follows it: a quiet one-column digest, a dense dashboard, a green-on-black
@@ -30,8 +36,8 @@ You need Chrome (or another Chromium browser), [Node.js](https://nodejs.org) 20+
 and an [Anthropic API key](https://console.anthropic.com).
 
 ```bash
-git clone https://github.com/ThariqS/ai-newtab.git
-cd ai-newtab
+git clone https://github.com/mejba13/themorningtab.git
+cd themorningtab
 npx pnpm@10.11.1 install
 npx pnpm@10.11.1 build
 ```
@@ -48,7 +54,8 @@ If Chrome asks whether to keep the changed new-tab page, choose **Keep it**.
 
 ## Your first homepage
 
-1. Open a new tab and paste your Anthropic API key.
+1. Open a new tab and paste your Anthropic API key. Use a key that is scoped to a
+   workspace. An organization-scoped key is rejected by the API.
 2. Click **Build today's homepage**.
 3. Watch it work. The progress view walks through each step: preparing the
    agent, reading your history, opening pages in your browser, analyzing them,
@@ -58,7 +65,7 @@ The first build takes a few minutes. You can close the tab while it runs, since
 the build lives in the extension's background worker and appears in any new tab
 you open.
 
-## Make it yours
+## Settings and customization
 
 Click **⚙️ Settings** on the new tab.
 
@@ -149,12 +156,75 @@ pnpm agent:run           # a full build against the real API, with fixture histo
 pnpm agent:verify        # check the output actually renders
 ```
 
+Never commit `.env`. It is in `.gitignore`.
+
+### Merging upstream updates
+
+The original project is kept as the `upstream` remote, so its fixes can be merged:
+
+```bash
+git remote add upstream https://github.com/ThariqS/ai-newtab.git   # once, on a fresh clone
+git fetch upstream
+git merge upstream/main
+```
+
+Expect conflicts where upstream touches renamed strings or the `@themorningtab`
+package scope. After merging, run `pnpm install`, `pnpm typecheck`, `pnpm test`
+and `pnpm build`.
+
+## Roadmap
+
+**Planned, not built.** None of these exist in the code yet.
+
+- [ ] Hosted key option, so a build does not need your own API key
+- [ ] Team and agency briefs
+- [ ] Bangla edition
+- [ ] Scheduled email digest
+
 ## Status
 
 Early and experimental. It's a tool you run yourself with your own key. Don't
 publish it to a store as-is: anyone with access to the browser profile can read
 the stored API key.
 
+## Credits
+
+The Morning Tab is an extended version of
+[ai-newtab](https://github.com/ThariqS/ai-newtab), created by
+[Thariq](https://github.com/ThariqS) ([@trq212](https://x.com/trq212)). The agent
+architecture, the Managed Agents flow and the extension foundation all originated
+there. See **[CREDITS.md](./CREDITS.md)** for details and
+**[CHANGELOG.md](./CHANGELOG.md)** for what changed in this fork.
+
+## About the maintainer
+
+**Engr Mejba Ahmed** — Senior AI Developer, Software Engineer and Entrepreneur
+based in Dhaka, Bangladesh. Founder/CEO of Ramlit Limited, ColorPark Creative
+Agency and xCyberSecurity Global Services. 10+ years building AI, full-stack
+(Laravel, Next.js, Python/FastAPI) and cloud/DevOps systems across 520+ projects.
+
+Links: <https://mejba.me> and <https://github.com/mejba13>
+
+---
+
+## Developed By
+
+<div align="center">
+
+<img width="380" height="420" alt="engr-mejba-ahmed" src="https://github.com/user-attachments/assets/83e72c39-5eaa-428a-884b-cb4714332487" />
+
+### **Engr Mejba Ahmed**
+
+**AI Developer | Software Engineer | Entrepreneur**
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-mejba.me-10B981?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.mejba.me)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mejba)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mejba13)
+
+</div>
+
+---
+
 ## License
 
-MIT
+[MIT](./LICENSE). Copyright (c) 2026 Thariq Shihipar and Copyright (c) 2026 Mejba Ahmed.
