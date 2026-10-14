@@ -7,7 +7,7 @@ export function ApiKeySetup({ onSave }: { onSave: (key: string) => void }) {
 
   return (
     <div style={{ maxWidth: 520, margin: "12vh auto", padding: 24, fontFamily: "system-ui" }}>
-      <h1 style={{ fontSize: 24 }}>Connect your Anthropic API key</h1>
+      <h1 style={{ fontSize: 24 }}>The Morning Tab: connect your Anthropic API key</h1>
       <p style={{ color: "#555", lineHeight: 1.6 }}>
         The agent runs inside this extension and talks to the Anthropic API directly. Your key
         is stored in <code>chrome.storage.local</code> on this machine and is never sent

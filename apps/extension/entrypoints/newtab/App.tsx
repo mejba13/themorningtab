@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { DEFAULT_MODEL, DEFAULT_BLOCKED_SITES, type HomepageModel } from "@homepage/agent-core";
+import { DEFAULT_MODEL, DEFAULT_BLOCKED_SITES, type HomepageModel } from "@themorningtab/agent-core";
 import { DEFAULT_REBUILD_INTERVAL_HOURS } from "@/lib/auto-rebuild";
 import { BUILD_STEPS } from "@/lib/protocol";
 import { KEYS, extensionStore, loadHomepage, loadSettings, saveSetting } from "@/lib/storage";
@@ -108,9 +108,9 @@ export default function App() {
   if (!renderedCode) {
     return (
       <div style={{ maxWidth: 560, margin: "14vh auto", padding: 24, fontFamily: "system-ui" }}>
-        <h1 style={{ fontSize: 26 }}>Build your homepage</h1>
+        <h1 style={{ fontSize: 26 }}>The Morning Tab</h1>
         <p style={{ color: "#555", lineHeight: 1.6 }}>
-          The agent reads your browsing history, opens the pages you actually follow, and writes a
+          All the news that fits your history. The agent reads your browsing history, opens the pages you actually follow, and writes a
           homepage from what it finds today.
         </p>
         {state.error && (
@@ -159,7 +159,7 @@ export default function App() {
             ↻ Rebuild
           </button>
         )}
-        <button style={btn} onClick={() => setShowSettings(true)} title="Customize homepage">
+        <button style={btn} onClick={() => setShowSettings(true)} title="Customize The Morning Tab">
           ⚙️ Settings
         </button>
       </div>

@@ -1,4 +1,4 @@
-import type { BrowserBridge } from "@homepage/agent-core";
+import type { BrowserBridge } from "@themorningtab/agent-core";
 import { getHistorySites } from "./history";
 import { scrapeUrls } from "./scraper";
 

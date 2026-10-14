@@ -5,7 +5,7 @@
  * for its state (see build-manager.ts). Tabs are thin, disposable views: they
  * connect on AGENT_PORT, receive a snapshot, then stream deltas.
  */
-import type { RunPhase } from "@homepage/agent-core";
+import type { RunPhase } from "@themorningtab/agent-core";
 
 export const AGENT_PORT = "homepage-agent";
 

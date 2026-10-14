@@ -8,7 +8,7 @@
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { BrowserBridge, KVStore, RawSiteMetadata } from "@homepage/agent-core";
+import type { BrowserBridge, KVStore, RawSiteMetadata } from "@themorningtab/agent-core";
 
 /** Harness state (cached agent/environment IDs, active session) and output, next to these scripts. */
 export const STATE_PATH = join(import.meta.dir, ".agent-state.json");

@@ -5,7 +5,7 @@ import {
   STORAGE_KEYS as AGENT_KEYS,
   type HomepageModel,
   type KVStore,
-} from "@homepage/agent-core";
+} from "@themorningtab/agent-core";
 
 /**
  * Everything the extension persists, in one place. All of it lives in

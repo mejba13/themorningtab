@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildHistoryDigest, slugifyUrl } from "@homepage/agent-core";
+import { buildHistoryDigest, slugifyUrl } from "@themorningtab/agent-core";
 import { fixtureHistory } from "./node-bridge";
 
 describe("buildHistoryDigest", () => {

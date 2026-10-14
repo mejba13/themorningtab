@@ -1,5 +1,6 @@
 {
-  "name": "@homepage/agent-core",
+  "name": "@themorningtab/agent-core",
+  "description": "The Morning Tab agent core: host-agnostic agent loop that builds the front page.",
   "version": "0.1.0",
   "private": true,
   "type": "module",

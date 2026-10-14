@@ -8,7 +8,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);`;
 
 const INDEX_HTML = `<!DOCTYPE html>
-<html><head><title>My Personalized Homepage</title></head>
+<html><head><title>The Morning Tab</title></head>
 <body><div id="root"></div></body></html>`;
 
 /**

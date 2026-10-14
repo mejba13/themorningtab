@@ -1,4 +1,4 @@
-import type { RawSiteMetadata } from "@homepage/agent-core";
+import type { RawSiteMetadata } from "@themorningtab/agent-core";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Domains seen fewer times than this are noise, not interests. */

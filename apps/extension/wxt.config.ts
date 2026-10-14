@@ -4,8 +4,10 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   manifest: {
-    name: "AI Homepage",
-    description: "A new-tab page an agent rebuilds daily from what you've actually been browsing.",
+    name: "The Morning Tab",
+    short_name: "Morning Tab",
+    description: "All the news that fits your history. A new-tab front page an agent rebuilds daily from what you've actually been browsing.",
+    homepage_url: "https://themorningtab.ai",
     permissions: [
       "history", //       getHistory tool
       "tabs", //          getPageHtml: open pages and watch them load

@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { runHomepageBuild, type RunPhase } from "@homepage/agent-core";
+import { runHomepageBuild, type RunPhase } from "@themorningtab/agent-core";
 import { rebuildIntervalMs, shouldAutoRebuild } from "./auto-rebuild";
 import { browserBridge } from "./browser-bridge";
 import {
@@ -289,7 +289,7 @@ export class BuildManager {
       browser.notifications.create({
         type: "basic",
         iconUrl: browser.runtime.getURL("/icon/128.png"),
-        title: "Homepage build failed",
+        title: "The Morning Tab: build failed",
         message: message.slice(0, 200),
       });
     } catch {

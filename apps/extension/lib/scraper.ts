@@ -1,4 +1,4 @@
-import type { BrowserBridge, ScrapedPage } from "@homepage/agent-core";
+import type { BrowserBridge, ScrapedPage } from "@themorningtab/agent-core";
 import sanitizeHtml from "sanitize-html";
 
 type ScrapeReport = Awaited<ReturnType<BrowserBridge["getPageHtml"]>>;

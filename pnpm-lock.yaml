@@ -20,7 +20,7 @@ importers:
       '@codesandbox/sandpack-react':
         specifier: ^2.20.0
         version: 2.20.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@homepage/agent-core':
+      '@themorningtab/agent-core':
         specifier: workspace:*
         version: link:../../packages/agent-core
       react:
@@ -60,7 +60,7 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.110.0
         version: 0.110.0(zod@4.6.5)
-      '@homepage/agent-core':
+      '@themorningtab/agent-core':
         specifier: workspace:*
         version: link:../packages/agent-core
       react:

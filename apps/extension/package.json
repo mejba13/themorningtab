@@ -1,6 +1,7 @@
 {
-  "name": "@homepage/extension",
-  "description": "MV3 browser extension that builds a personalized new-tab homepage from your browsing history.",
+  "name": "@themorningtab/extension",
+  "description": "The Morning Tab: MV3 browser extension that builds a personalized new-tab front page from your browsing history.",
+  "homepage": "https://themorningtab.ai",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -17,7 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
     "@codesandbox/sandpack-react": "^2.20.0",
-    "@homepage/agent-core": "workspace:*",
+    "@themorningtab/agent-core": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sanitize-html": "^2.17.0",

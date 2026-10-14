@@ -38,7 +38,7 @@ export function BuildProgress({
       <div className="build-left">
         <div className="build-panel">
           <div className="build-top">
-            <span className="build-title">Building your homepage</span>
+            <span className="build-title">The Morning Tab: building your homepage</span>
             <span className="build-elapsed">
               {mm}:{ss}
             </span>

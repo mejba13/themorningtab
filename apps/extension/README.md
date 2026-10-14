@@ -1,4 +1,4 @@
-# @homepage/extension
+# The Morning Tab extension (`@themorningtab/extension`)
 
 The MV3 browser extension (WXT + React). See the [root README](../../README.md)
 for setup and [ARCHITECTURE.md](../../ARCHITECTURE.md) for how it fits together.

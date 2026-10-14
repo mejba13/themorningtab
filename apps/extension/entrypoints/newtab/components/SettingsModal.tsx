@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MODEL_CHOICES, normalizeBlockList, type HomepageModel } from "@homepage/agent-core";
+import { MODEL_CHOICES, normalizeBlockList, type HomepageModel } from "@themorningtab/agent-core";
 import { REBUILD_INTERVAL_CHOICES } from "@/lib/auto-rebuild";
 import { btn } from "./ui";
 
@@ -43,7 +43,7 @@ export function SettingsModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div style={{ backgroundColor: "white", borderRadius: 8, padding: 24, width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto" }}>
-        <h2 style={{ marginTop: 0, color: "#333" }}>Customize your homepage</h2>
+        <h2 style={{ marginTop: 0, color: "#333" }}>Customize The Morning Tab</h2>
         <p style={{ color: "#666" }}>Standing instructions applied to every build.</p>
         <textarea
           value={draft}

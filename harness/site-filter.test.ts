@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type Anthropic from "@anthropic-ai/sdk";
-import { isBlocked, normalizeBlockList, runHomepageBuild, type BrowserBridge, type KVStore } from "@homepage/agent-core";
+import { isBlocked, normalizeBlockList, runHomepageBuild, type BrowserBridge, type KVStore } from "@themorningtab/agent-core";
 import { fixtureHistory } from "./node-bridge";
 
 test("normalizes pasted hosts and URLs", () => {

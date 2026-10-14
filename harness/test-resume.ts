@@ -22,7 +22,7 @@ import {
   ensureAgent,
   ensureEnvironment,
   runHomepageBuild,
-} from "@homepage/agent-core";
+} from "@themorningtab/agent-core";
 import { FileKVStore, STATE_PATH, nodeBridge } from "./node-bridge";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });

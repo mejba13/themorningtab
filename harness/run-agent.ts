@@ -9,7 +9,7 @@
  * Run: pnpm agent:run
  */
 import Anthropic from "@anthropic-ai/sdk";
-import { runHomepageBuild } from "@homepage/agent-core";
+import { runHomepageBuild } from "@themorningtab/agent-core";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { FileKVStore, OUT_DIR, OUT_PATH, STATE_PATH, nodeBridge } from "./node-bridge";
 
