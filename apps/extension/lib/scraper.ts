@@ -81,7 +81,7 @@ function cleanHtmlForLLM(html: string) {
 }
 
 /** Scrape in a separate unfocused window so tabs don't flash in front of the user. */
-async function createScraperWindow(): Promise<number> {
+export async function createScraperWindow(): Promise<number> {
   const win = await browser.windows.create({
     focused: false,
     state: "normal",
@@ -220,7 +220,7 @@ export async function scrapeUrls(
   return { pages, failed };
 }
 
-async function waitForTabLoad(
+export async function waitForTabLoad(
   tabId: number,
   timeout: number
 ): Promise<boolean> {

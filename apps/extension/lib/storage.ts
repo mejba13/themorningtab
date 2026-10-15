@@ -1,10 +1,18 @@
 import {
   DEFAULT_MODEL,
+  DEFAULT_SOCIAL_PULSE,
+  SOCIAL_PLATFORMS,
+  clampPerPlatform,
+  parseTopics,
   DEFAULT_BLOCKED_SITES,
   MODEL_CHOICES,
   STORAGE_KEYS as AGENT_KEYS,
   type HomepageModel,
   type KVStore,
+  type SocialItem,
+  type SocialPlatform,
+  type SocialPlatformReport,
+  type SocialPulseSettings,
 } from "@themorningtab/agent-core";
 
 /**
@@ -25,7 +33,26 @@ export const KEYS = {
   rebuildIntervalHours: "autoRebuildIntervalHours",
   /** Throttled mirror of the live build state, for tabs that open while the worker sleeps. */
   buildSnapshot: "buildSnapshot",
+  socialPulse: "socialPulse",
+  /** Stored like apiKey. Sent only to www.googleapis.com, never logged or shown to the model. */
+  youtubeApiKey: "youtubeApiKey",
+  /** Per-platform outcome of the last build, for Settings. */
+  socialPulseStatus: "socialPulseStatus",
+  /** YouTube API results, reused within the rebuild interval to save quota. */
+  youtubeCache: "youtubeCache",
 } as const;
+
+export interface SocialPulseStatus {
+  at: string;
+  platforms: Record<SocialPlatform, SocialPlatformReport>;
+}
+
+export interface YouTubeCache {
+  /** Topics the results were fetched for; a topic change invalidates the cache. */
+  signature: string;
+  fetchedAt: string;
+  items: SocialItem[];
+}
 
 export interface Homepage {
   /** The agent's raw TSX source. */
@@ -42,6 +69,23 @@ export interface Settings {
   /** Unset means on — auto-rebuild is opt-out. */
   autoRebuild: boolean;
   rebuildIntervalHours: number | null;
+  socialPulse: SocialPulseSettings;
+  youtubeApiKey: string | null;
+}
+
+/** Fill gaps from defaults, so settings saved by an older version still load. */
+export function normalizeSocialPulse(raw: Partial<SocialPulseSettings> | undefined): SocialPulseSettings {
+  const platforms = { ...DEFAULT_SOCIAL_PULSE.platforms };
+  for (const p of SOCIAL_PLATFORMS) {
+    if (typeof raw?.platforms?.[p] === "boolean") platforms[p] = raw.platforms[p];
+  }
+  const topics = parseTopics(raw?.topics ?? []);
+  return {
+    enabled: raw?.enabled === true,
+    topics: topics.length ? topics : [...DEFAULT_SOCIAL_PULSE.topics],
+    platforms,
+    perPlatform: clampPerPlatform(raw?.perPlatform ?? DEFAULT_SOCIAL_PULSE.perPlatform),
+  };
 }
 
 /** The `KVStore` agent-core persists its agent/environment/session IDs through. */
@@ -66,6 +110,8 @@ export async function loadSettings(): Promise<Settings> {
     KEYS.model,
     KEYS.autoRebuild,
     KEYS.rebuildIntervalHours,
+    KEYS.socialPulse,
+    KEYS.youtubeApiKey,
   ]);
   const model = s[KEYS.model] as string | undefined;
   return {
@@ -76,10 +122,14 @@ export async function loadSettings(): Promise<Settings> {
     model: MODEL_CHOICES.find((m) => m.id === model)?.id ?? DEFAULT_MODEL,
     autoRebuild: s[KEYS.autoRebuild] !== false,
     rebuildIntervalHours: (s[KEYS.rebuildIntervalHours] as number | undefined) ?? null,
+    socialPulse: normalizeSocialPulse(s[KEYS.socialPulse] as Partial<SocialPulseSettings> | undefined),
+    youtubeApiKey: (s[KEYS.youtubeApiKey] as string | undefined) || null,
   };
 }
 
-export async function saveSetting<K extends "apiKey" | "systemPrompt" | "blockedSites" | "model" | "autoRebuild" | "rebuildIntervalHours">(
+export async function saveSetting<
+  K extends "apiKey" | "systemPrompt" | "blockedSites" | "model" | "autoRebuild" | "rebuildIntervalHours" | "socialPulse" | "youtubeApiKey",
+>(
   key: K,
   value: Settings[K],
 ): Promise<void> {

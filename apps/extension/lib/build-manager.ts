@@ -141,7 +141,7 @@ export class BuildManager {
       return; // single-flight: a second start just attaches.
     }
 
-    const { apiKey, systemPrompt, model } = await loadSettings();
+    const { apiKey, systemPrompt, model, socialPulse } = await loadSettings();
     if (!apiKey) {
       // Manual builds are gated behind the key-setup screen and auto-builds
       // require a key, so this only happens if the key was removed.
@@ -175,6 +175,7 @@ export class BuildManager {
         userSystemPrompt: systemPrompt,
         blockedSites: async () => (await loadSettings()).blockedSites,
         model,
+        socialPulse: socialPulse.enabled,
         resumeSessionId,
         signal: this.controller.signal,
         callbacks: {
