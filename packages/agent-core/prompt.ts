@@ -79,6 +79,8 @@ You have these capabilities:
   external stylesheet.
 - Every link must be a real absolute URL taken from the scraped content. Never
   invent a URL, never leave an \`href="#"\` placeholder.
+- Every link opens in a new tab: \`target="_blank" rel="noopener noreferrer"\`.
+  The page renders inside a frame, and most sites refuse to load in one.
 - Responsive, works dark or light, hover states and transitions where they help.
 - Emoji are fine as category markers; icon libraries are not.
 
