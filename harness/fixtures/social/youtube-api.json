@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "id": { "videoId": "ApIvIdEo001" }, "snippet": { "publishedAt": "2026-10-15T09:30:00Z", "title": "Anthropic&#39;s new agent SDK &amp; tools, explained", "channelTitle": "AI Explained", "thumbnails": { "medium": { "url": "https://i.ytimg.com/vi/ApIvIdEo001/mqdefault.jpg" } } } },
+    { "id": { "videoId": "ApIvIdEo002" }, "snippet": { "publishedAt": "2026-10-14T20:00:00Z", "title": "Running LLMs locally in 2026", "channelTitle": "Local First", "thumbnails": { "medium": { "url": "https://i.ytimg.com/vi/ApIvIdEo002/mqdefault.jpg" } } } },
+    { "id": { "videoId": "ApIvIdEo003" }, "snippet": { "publishedAt": "2026-10-15T11:00:00Z", "title": "Thumbnail on a foreign host", "channelTitle": "Somebody", "thumbnails": { "medium": { "url": "https://evil.example/thumb.jpg" } } } },
+    { "id": { "kind": "youtube#channel", "channelId": "UCxyz" }, "snippet": { "title": "A channel, not a video" } }
+  ]
+}

@@ -4,6 +4,19 @@ const INDEX_JS = `import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 
+// Model-written links don't always set target="_blank". Followed inside this
+// iframe, most sites refuse to be framed and show an error, so every web link
+// opens in a new tab. In-page anchors are left alone.
+document.addEventListener("click", (event) => {
+  const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+  if (!link) return;
+  const url = new URL(link.getAttribute("href"), location.href);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  if (url.origin === location.origin && url.hash) return;
+  event.preventDefault();
+  window.open(url.href, "_blank", "noopener,noreferrer");
+}, true);
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);`;
 

@@ -7,6 +7,8 @@
  * may import `chrome`, `browser`, or `node:*`.
  */
 
+import type { SocialPulseResult } from "./social";
+
 /** One domain's worth of browsing history, narrowed to fit in a context window. */
 export interface SiteDigest {
   domain: string;
@@ -81,6 +83,12 @@ export interface BrowserBridge {
     urls: string[];
     loadDelayMs?: number;
   }): Promise<{ pages: ScrapedPage[]; failed: Array<{ url: string; reason: string }> }>;
+
+  /**
+   * Social Pulse, collected and parsed host-side. Optional: a host without it
+   * reports every platform as skipped. Blocked hosts must not be loaded.
+   */
+  getSocialPulse?(args: { blockedSites: string[] }): Promise<SocialPulseResult>;
 }
 
 /** Minimal persistence. `chrome.storage.local` in the extension, a JSON file in Node. */

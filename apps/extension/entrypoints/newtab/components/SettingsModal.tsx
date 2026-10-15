@@ -1,7 +1,23 @@
 import { useState } from "react";
-import { MODEL_CHOICES, normalizeBlockList, type HomepageModel } from "@themorningtab/agent-core";
+import {
+  MODEL_CHOICES,
+  clampPerPlatform,
+  normalizeBlockList,
+  parseTopics,
+  type HomepageModel,
+  type SocialPulseSettings as SocialPulseConfig,
+} from "@themorningtab/agent-core";
 import { REBUILD_INTERVAL_CHOICES } from "@/lib/auto-rebuild";
+import type { SocialPulseStatus } from "@/lib/storage";
+import { SocialPulseSettings, type SocialPulseDraft } from "./SocialPulseSettings";
 import { btn } from "./ui";
+
+export interface SettingsSave {
+  prompt: string;
+  blockedSites: string[];
+  socialPulse: SocialPulseConfig;
+  youtubeApiKey: string | null;
+}
 
 export function SettingsModal({
   initialPrompt,
@@ -12,6 +28,9 @@ export function SettingsModal({
   onToggleAutoRebuild,
   intervalHours,
   onChangeInterval,
+  socialPulse,
+  youtubeApiKey,
+  socialStatus,
   onClose,
   onSave,
 }: {
@@ -23,11 +42,34 @@ export function SettingsModal({
   onToggleAutoRebuild: (next: boolean) => void;
   intervalHours: number;
   onChangeInterval: (next: number) => void;
+  socialPulse: SocialPulseConfig;
+  youtubeApiKey: string | null;
+  socialStatus: SocialPulseStatus | null;
   onClose: () => void;
-  onSave: (prompt: string, blockedSites: string[]) => void;
+  onSave: (next: SettingsSave) => void;
 }) {
   const [draft, setDraft] = useState(initialPrompt);
   const [blockedDraft, setBlockedDraft] = useState(blockedSites.join("\n"));
+  const [socialDraft, setSocialDraft] = useState<SocialPulseDraft>({
+    ...socialPulse,
+    topics: socialPulse.topics.join(", "),
+    youtubeApiKey: youtubeApiKey ?? "",
+  });
+
+  const save = () => {
+    const topics = parseTopics(socialDraft.topics);
+    onSave({
+      prompt: draft,
+      blockedSites: normalizeBlockList(blockedDraft.split("\n")),
+      socialPulse: {
+        enabled: socialDraft.enabled,
+        topics: topics.length ? topics : ["AI"],
+        platforms: socialDraft.platforms,
+        perPlatform: clampPerPlatform(socialDraft.perPlatform),
+      },
+      youtubeApiKey: socialDraft.youtubeApiKey.trim() || null,
+    });
+  };
 
   return (
     <div
@@ -51,6 +93,7 @@ export function SettingsModal({
           placeholder="e.g. 'Focus on tech news and Rust releases', 'Always surface unread GitHub PRs first'"
           style={{
             width: "100%",
+            boxSizing: "border-box",
             minHeight: 200,
             padding: 12,
             fontSize: 14,
@@ -134,6 +177,7 @@ export function SettingsModal({
           When on, the extension rebuilds in the background once your homepage is this old, so
           your next tab shows a fresh one (uses your API key).
         </p>
+        <SocialPulseSettings draft={socialDraft} onChange={setSocialDraft} lastStatus={socialStatus} />
         <div style={{ display: "flex", gap: 12, marginTop: 20, justifyContent: "flex-end" }}>
           <button
             onClick={onClose}
@@ -141,7 +185,7 @@ export function SettingsModal({
           >
             Cancel
           </button>
-          <button onClick={() => onSave(draft, normalizeBlockList(blockedDraft.split("\n")))} style={btn}>
+          <button onClick={save} style={btn}>
             Save &amp; rebuild
           </button>
         </div>

@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { HOMEPAGE_SYSTEM_PROMPT } from "./prompt";
-import { GET_HISTORY_SCHEMA, GET_PAGE_HTML_SCHEMA } from "./schemas";
+import { GET_HISTORY_SCHEMA, GET_PAGE_HTML_SCHEMA, GET_SOCIAL_PULSE_SCHEMA } from "./schemas";
 import type { KVStore } from "./types";
 
 /** Models offered in Settings. The first is the default. */
@@ -116,6 +116,16 @@ function agentDefinition(model: HomepageModel) {
           "Prefer this over any web fetch: it sees authenticated, JavaScript-rendered " +
           "pages that an anonymous fetch cannot.",
         input_schema: GET_PAGE_HTML_SCHEMA,
+      },
+      {
+        type: "custom",
+        name: "getSocialPulse",
+        description:
+          "Collects the latest posts about the user's chosen topics from the social " +
+          "platforms they enabled, already parsed and validated. Mounts the result as " +
+          "JSON and returns its mountPath plus a status per platform. Call it once, " +
+          "and only when the kickoff message says Social Pulse is on.",
+        input_schema: GET_SOCIAL_PULSE_SCHEMA,
       },
     ],
   } satisfies Anthropic.Beta.AgentCreateParams;
