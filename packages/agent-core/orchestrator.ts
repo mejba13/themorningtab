@@ -3,6 +3,14 @@ import { buildHistoryDigest, slugifyUrl } from "./history-digest";
 import { OUTPUT_PATH, buildKickoffMessage } from "./prompt";
 import { DEFAULT_BLOCKED_SITES, isAllowedUrl, isBlocked, normalizeBlockList } from "./site-filter";
 import { DEFAULTS } from "./schemas";
+import {
+  emptyPlatformReports,
+  findUnlistedSocialLinks,
+  validateItemUrl,
+  validateThumbnailUrl,
+  type GetSocialPulseResult,
+  type SocialItem,
+} from "./social";
 import { STORAGE_KEYS, ensureAgent, ensureEnvironment, type HomepageModel } from "./setup";
 import type {
   BrowserBridge,
@@ -40,6 +48,8 @@ export interface RunOptions {
    * so a list saved mid-build applies to the rest of that build.
    */
   blockedSites?: string[] | (() => Promise<string[]>);
+  /** Social Pulse is on in the user's settings. Off, the tool reports every platform skipped. */
+  socialPulse?: boolean;
   /** Ignored when resuming: the session keeps the agent (and model) it started with. */
   model?: HomepageModel;
   callbacks?: RunCallbacks;
@@ -86,6 +96,8 @@ export async function runHomepageBuild(opts: RunOptions): Promise<HomepageBuildR
   };
 
   let finalMessage = "";
+  /** Kept for the post-build link audit. Empty after a reattach, which skips the audit. */
+  let socialItems: SocialItem[] = [];
 
   /**
    * Every path out of here must send a result. An `agent.custom_tool_use` that
@@ -97,7 +109,7 @@ export async function runHomepageBuild(opts: RunOptions): Promise<HomepageBuildR
       const blockedSites = normalizeBlockList(
         (typeof opts.blockedSites === "function" ? await opts.blockedSites() : opts.blockedSites) ?? DEFAULT_BLOCKED_SITES,
       );
-      let result: GetHistoryResult | GetPageHtmlResult;
+      let result: GetHistoryResult | GetPageHtmlResult | GetSocialPulseResult;
       switch (event.name) {
         case "getHistory":
           result = await runGetHistory(event, bridge, emit, blockedSites);
@@ -105,6 +117,12 @@ export async function runHomepageBuild(opts: RunOptions): Promise<HomepageBuildR
         case "getPageHtml":
           result = await runGetPageHtml(event, { client, bridge, sessionId: sessionId!, rememberUpload, emit, blockedSites });
           break;
+        case "getSocialPulse": {
+          const pulse = await runGetSocialPulse({ client, bridge, sessionId: sessionId!, rememberUpload, emit, blockedSites, enabled: Boolean(opts.socialPulse) });
+          socialItems = pulse.items;
+          result = pulse.result;
+          break;
+        }
         default:
           throw new Error(`Unknown custom tool: ${event.name}`);
       }
@@ -203,6 +221,7 @@ export async function runHomepageBuild(opts: RunOptions): Promise<HomepageBuildR
                   text: buildKickoffMessage({
                     now: opts.now ?? new Date(),
                     userSystemPrompt: opts.userSystemPrompt,
+                    socialPulse: Boolean(opts.socialPulse && bridge.getSocialPulse),
                   }),
                 },
               ],
@@ -240,6 +259,10 @@ export async function runHomepageBuild(opts: RunOptions): Promise<HomepageBuildR
 
     emit.phase("writing");
     const code = await collectDeliverable(client, sessionId, finalMessage, emit);
+    if (socialItems.length) {
+      const unlisted = findUnlistedSocialLinks(code.code, socialItems);
+      if (unlisted.length) emit.log(`warning: ${unlisted.length} social post link(s) not from Social Pulse: ${unlisted.slice(0, 3).join(", ")}`);
+    }
     emit.phase("done");
     return { code: code.code, sessionId, source: code.source };
   } finally {
@@ -364,6 +387,53 @@ async function runGetPageHtml(
   }
 
   return { pages: refs, failed: mountFailures };
+}
+
+async function runGetSocialPulse(ctx: {
+  client: Anthropic;
+  bridge: BrowserBridge;
+  sessionId: string;
+  rememberUpload: (id: string) => Promise<void>;
+  emit: Emit;
+  blockedSites: string[];
+  enabled: boolean;
+}): Promise<{ result: GetSocialPulseResult; items: SocialItem[] }> {
+  const off = (detail: string) => ({
+    result: { mountPath: null, bytes: 0, topics: [], itemCount: 0, platforms: emptyPlatformReports("skipped", detail) },
+    items: [],
+  });
+  if (!ctx.enabled) return off("Social Pulse is off");
+  if (!ctx.bridge.getSocialPulse) return off("this host cannot collect social posts");
+
+  ctx.emit.phase("scraping", "social pulse");
+  const pulse = await ctx.bridge.getSocialPulse({ blockedSites: ctx.blockedSites });
+
+  // Re-checked here so a host bug can't hand the model an unvetted link.
+  const items = pulse.items.flatMap((item) => {
+    if (validateItemUrl(item.platform, item.url) !== item.url || !isAllowedUrl(item.url, ctx.blockedSites)) return [];
+    return [{ ...item, thumbnail: validateThumbnailUrl(item.platform, item.thumbnail) }];
+  });
+  const dropped = pulse.items.length - items.length;
+  if (dropped) ctx.emit.log(`social pulse: dropped ${dropped} item(s) that failed validation`);
+
+  const summary = Object.entries(pulse.platforms).map(([p, r]) => `${p}=${r.status}:${r.count}`).join(" ");
+  ctx.emit.log(`social pulse: ${summary}`);
+
+  const base = { topics: pulse.topics, itemCount: items.length, platforms: pulse.platforms };
+  if (!items.length) return { result: { ...base, mountPath: null, bytes: 0 }, items };
+
+  const json = JSON.stringify({ ...pulse, items });
+  const upload = await ctx.client.beta.files.upload({
+    file: new File([json], "social-pulse.json", { type: "application/json" }),
+  });
+  await ctx.rememberUpload(upload.id);
+  const resource = await ctx.client.beta.sessions.resources.add(ctx.sessionId, {
+    type: "file",
+    file_id: upload.id,
+    mount_path: `${UPLOAD_ROOT}/social/pulse.json`,
+  });
+  ctx.emit.log(`mounted social pulse -> ${resource.mount_path} (${json.length}b)`);
+  return { result: { ...base, mountPath: resource.mount_path, bytes: json.length }, items };
 }
 
 // ---------------------------------------------------------------------------
