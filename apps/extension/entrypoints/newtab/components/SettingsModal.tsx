@@ -51,6 +51,7 @@ export function SettingsModal({
           placeholder="e.g. 'Focus on tech news and Rust releases', 'Always surface unread GitHub PRs first'"
           style={{
             width: "100%",
+            boxSizing: "border-box",
             minHeight: 200,
             padding: 12,
             fontSize: 14,
