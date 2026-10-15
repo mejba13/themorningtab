@@ -11,8 +11,9 @@ There is no server. Three parties are involved, and you run one of them.
 
 The agent loop runs **in the service worker** (`apps/extension/lib/build-manager.ts`), so a build
 survives closing the tab, shows up in every open tab, and can run headless on a
-`chrome.alarms` schedule. The two custom tools execute in the extension too, because they
-need `chrome.history` and `chrome.tabs`. Anthropic never executes them — it emits an event
+`chrome.alarms` schedule. The custom tools execute in the extension too, because they
+need `chrome.history` and `chrome.tabs` (and, for `getSocialPulse`, the user's
+signed-in session). Anthropic never executes them — it emits an event
 and waits for a `user.custom_tool_result` on the same authenticated stream. There is no
 inbound connection and no public endpoint.
 
@@ -70,12 +71,16 @@ packages/agent-core/      host-agnostic agent loop — imports no chrome.*, brow
   prompt.ts               system prompt + per-build kickoff message
   schemas.ts              custom tool input schemas and defaults
   history-digest.ts       narrows raw history to fit a tool result
+  social.ts               Social Pulse types, platform allowlists, URL validators, link audit
+  social-parsers.ts       per-platform parsers over a DOM ParentNode
+  social-pulse.ts         runs enabled adapters one by one, failing soft per platform
   types.ts                BrowserBridge, KVStore, RunPhase, …
 
 apps/extension/           MV3 extension (WXT + React)
   entrypoints/
     background.ts         service worker: hosts BuildManager, alarm heartbeat
     scraper.content.ts    injected into scraped tabs: scroll, return HTML
+    social-capture.content.ts  Social Pulse: return rendered HTML, no scroll or clicks
     newtab/               the new-tab UI (thin client onto the worker)
   lib/
     build-manager.ts      single-flight build host, broadcast, keepalive, reattach
@@ -85,6 +90,7 @@ apps/extension/           MV3 extension (WXT + React)
     protocol.ts           page ↔ worker messages and the five UI build steps
     auto-rebuild.ts       when to rebuild on a schedule
     storage.ts            every chrome.storage key, settings, saved homepage
+    social/               Social Pulse: YouTube API client, page capture, Chrome wiring
     transpile.ts          TSX → JS for the preview
 
 harness/                  Bun scripts: drive agent-core with a fixture/fetch bridge, test the extension
@@ -100,6 +106,7 @@ harness/                  Bun scripts: drive agent-core with a fixture/fetch bri
 | `pnpm agent:resume-test` | A build killed with a tool call pending can be reattached and finished |
 | `pnpm agent:retention <sessionId>` | The session and every uploaded page body are actually deleted |
 | `pnpm extension:test` | In headless Chrome: worker registers, new tab renders, port protocol answers, `chrome.history` reads |
+| `pnpm extension:social-visual` | Social Pulse from fixtures at 3 widths, light and dark: thumbnails, overflow, labels, links, console, Settings panel |
 
 The `agent:*` commands need `ANTHROPIC_API_KEY` in `.env` and spend API credits. The
 harness's bridge uses fixture history and a plain `fetch`, so it can't see
@@ -150,6 +157,16 @@ The session event log persists every domain, title and scraped page body server-
 until deleted, and uploaded files persist independently. `runHomepageBuild` deletes
 both in a `finally`. Confirm retention/ZDR eligibility against current docs before
 distributing this.
+
+Social Pulse items are parsed in the extension, and every link and thumbnail
+must pass a per-platform allowlist (https only, no credentials or ports). The
+orchestrator checks them again, plus the blocklist, before the JSON is uploaded.
+Links are otherwise only asked for in the prompt, so a post link in the finished
+homepage that Social Pulse did not supply is logged as a warning.
+
+The homepage iframe opens every web link in a new tab. Most sites refuse to be
+framed, so a link the model wrote without `target="_blank"` would otherwise
+show an error.
 
 The API key lives in `chrome.storage.local`, readable by anyone with access to the
 browser profile. Fine for a tool you run yourself; **do not ship this to the Web Store**

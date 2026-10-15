@@ -27,6 +27,13 @@ terminal, a zine.
 > content. The agent session and every uploaded page are deleted when each build
 > ends. Your API key stays in the extension's local storage. More detail in
 > [ARCHITECTURE.md](./ARCHITECTURE.md#privacy).
+>
+> **Social Pulse** is off by default. When you turn it on, the extension reads
+> one search page per enabled platform for your topics, in your signed-in
+> browser. It keeps only each post's text, link, author, time and thumbnail
+> link, and sends that list to the Anthropic API. Cookies and session tokens
+> are never read or sent. With a YouTube API key, YouTube is searched through
+> the official Data API instead; the key is sent only to Google.
 
 ---
 
@@ -89,6 +96,30 @@ history summaries and URLs requested through `getPageHtml`. A page that redirect
 onto a blocked host is dropped before its content is uploaded. Local-network
 addresses (localhost, private IPs, `.local` and `.internal` hosts) are always blocked.
 
+**Social Pulse.** Adds the latest posts about your topics (default "AI") from
+YouTube, X, LinkedIn, Pinterest and Instagram, grouped by platform, newest first.
+
+- Turn it on with **Show the latest posts about my topics**. Topics are
+  comma-separated and combined into one search per platform.
+- YouTube is on by default. The other platforms are off by default. They read
+  your signed-in session, and their terms restrict automated access, so each
+  toggle shows a risk note. Each build loads at most one page per platform,
+  with no scrolling, clicking, liking or posting.
+- Settings shows each platform's result from the last build: ok, signed out,
+  blocked, failed or skipped. A failed platform never fails the build.
+- Your instructions can still move, restyle or drop the section.
+
+YouTube API key (optional, uses the official API and saves you from page reads):
+
+1. In Google Cloud Console, create or pick a project.
+2. Open [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) and click **Enable**.
+3. Go to [Credentials](https://console.cloud.google.com/apis/credentials), click
+   **Create credentials → API key**, then **Restrict key** to *YouTube Data API v3* only.
+4. Paste it into **YouTube API key** in Settings and click **Save & rebuild**.
+
+Each build makes at most one search call (100 of the default 10,000 daily
+quota units), and results are reused until your rebuild interval passes.
+
 **Model.** Choose which Claude model writes your page:
 
 - **Claude Sonnet 5.5** (default): the best balance of quality and cost.
@@ -150,6 +181,7 @@ pnpm dev                 # WXT with hot reload
 pnpm typecheck           # all packages
 pnpm test                # unit tests (no API calls; needs Bun)
 pnpm extension:test      # loads the built extension into headless Chrome (no API calls)
+pnpm extension:social-visual  # Social Pulse screenshots from fixtures (Chrome for Testing; no platform requests)
 
 cp .env.example .env     # add ANTHROPIC_API_KEY, then:
 pnpm agent:run           # a full build against the real API, with fixture history
