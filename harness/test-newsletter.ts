@@ -28,6 +28,24 @@ try {
   const iframe = await page.waitForSelector("iframe", { timeout: 60000 });
   const frame = (await iframe.contentFrame())!;
   await frame.waitForSelector(".mt-edition", { timeout: 90000 });
+  const typography = await frame.evaluate(async () => {
+    await Promise.all([
+      document.fonts.load('600 22px "Source Serif 4"'),
+      document.fonts.load('400 16px "Source Serif 4"'),
+      document.fonts.load('700 18px "Source Sans 3"'),
+    ]);
+    await document.fonts.ready;
+    const family = (selector: string) => getComputedStyle(document.querySelector(selector)!).fontFamily;
+    return {
+      loaded: [...document.fonts].filter(f => f.status === "loaded").map(f => f.family),
+      headline: family(".mt-story h2"), body: family(".mt-story p"),
+      section: family(".mt-section > h2"), metadata: family(".mt-meta"),
+    };
+  });
+  assert.ok(typography.loaded.includes("Source Serif 4") && typography.loaded.includes("Source Sans 3"));
+  assert.ok(typography.headline.includes("Source Serif 4") && typography.body.includes("Source Serif 4"));
+  assert.ok(typography.section.includes("Source Sans 3") && typography.metadata.includes("Source Sans 3"));
+  console.log("PASS locally loaded editorial fonts", typography);
   const banner = await frame.evaluate(async () => {
     const header = document.querySelector(".mt-masthead")!;
     const background = getComputedStyle(header).backgroundImage;

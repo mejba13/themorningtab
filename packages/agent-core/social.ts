@@ -63,7 +63,7 @@ export const SOCIAL_LIMITS = {
 } as const;
 
 export const DEFAULT_SOCIAL_PULSE: SocialPulseSettings = {
-  enabled: false,
+  enabled: true,
   topics: ["AI"],
   platforms: { youtube: true, x: false, linkedin: false, pinterest: false, instagram: false },
   perPlatform: 5,

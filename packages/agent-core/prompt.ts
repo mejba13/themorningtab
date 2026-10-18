@@ -114,6 +114,11 @@ element so the component also renders correctly standalone:
 - section.mt-ideas holds short story-based content ideas, each linked to its
   supporting source. No invented performance claims.
 - footer.mt-footer may state the edition date and a brief source limitation.
+Typography follows a broadcast-news editorial hierarchy: Source Serif 4 for
+headlines and story summaries; Source Sans 3 for section labels, navigation,
+source credits and dates. The host bundles these fonts; do not fetch fonts.
+Lead headlines are 28–36px, brief headlines 22px, story text 16–17px, metadata
+13px, and section labels 18px bold sans-serif. Preserve the stylesheet's scale.
 Use the supplied responsive grid, blue links, generous spacing, high-contrast
 dark mode, and serif headlines. Avoid decorative gradients, emoji clutter,
 greeting banners, pill cards, fake live badges and tickers. Do not override

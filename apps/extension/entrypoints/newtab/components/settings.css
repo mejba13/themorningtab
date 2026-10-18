@@ -1,3 +1,18 @@
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("../../../assets/fonts/source-serif-4-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("../../../assets/fonts/source-sans-3-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 .editor-settings {
   --settings-text: #f0eee8;
   --settings-muted: #b0b2be;
@@ -17,7 +32,8 @@
   color: var(--settings-text);
   box-shadow: 0 32px 100px #090a12aa, inset 0 1px #ffffff12;
   backdrop-filter: blur(28px);
-  font: 14px/1.55 system-ui, -apple-system, sans-serif;
+  font: 400 15px/1.55 "Source Sans 3", Arial, sans-serif;
+  font-optical-sizing: auto;
   overflow: hidden;
 }
 .editor-settings[open] { display: flex; flex-direction: column; animation: settings-enter 220ms ease-out; }
@@ -31,15 +47,15 @@
 .settings-eyebrow { display: flex; align-items: center; gap: 9px; font-size: 10px; font-weight: 650; letter-spacing: .14em; color: #e7c4a6; }
 .settings-eyebrow > span:last-child { color: var(--settings-muted); font-weight: 400; }
 .edition-mark { color: var(--settings-accent); font-size: 23px; line-height: 1; }
-.settings-header h2 { font: 500 28px/1.2 Georgia, 'Times New Roman', serif; margin: 10px 0 0; letter-spacing: -.025em; }
+.settings-header h2 { font: 600 28px/1.2 "Source Serif 4", Georgia, serif; margin: 10px 0 0; letter-spacing: -.025em; }
 .settings-close { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 1px solid #444650; background: #ffffff06; color: #dddae3; font-size: 25px !important; }
 .settings-close:hover { background: #ffffff12; }
 .settings-mobile-agent { display: none !important; }
 .settings-workspace { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 0; flex: 1; }
 .settings-aside { padding: 30px 24px 22px; background: radial-gradient(ellipse at 20% 30%, #78523922, transparent 70%), #ffffff02; border-right: 1px solid var(--settings-border); overflow-y: auto; }
 .settings-edition { color: var(--settings-muted); letter-spacing: .16em; font-size: 10px; }
-.settings-aside h3 { margin: 16px 0 12px; font: 28px/1.15 Georgia, serif; letter-spacing: -.025em; }
-.settings-aside h3 em { color: var(--settings-accent); font-weight: 400; }
+.settings-aside h3 { margin: 16px 0 12px; font: 600 28px/1.2 "Source Serif 4", Georgia, serif; letter-spacing: -.025em; }
+.settings-aside h3 em { font-style: normal; color: var(--settings-accent); font-weight: 400; }
 .settings-aside > p { color: var(--settings-muted); font-size: 12px; line-height: 1.7; margin: 0; }
 .editor-agent { text-align: center; margin: 12px -6px 24px; }
 .editor-agent svg { width: 180px; height: 144px; display: block; margin: auto; }
@@ -60,7 +76,7 @@
 .settings-aside nav a:hover { color: var(--settings-accent); background: #ffffff05; }
 .settings-aside nav span { font: 10px ui-monospace, monospace; color: #a29991; }
 .settings-aside nav b { margin-left: auto; font-weight: 400; color: #a29991; }
-.settings-aside-foot { font: italic 15px/1.5 Georgia, serif; margin-top: 28px; color: #a4a3ad; }
+.settings-aside-foot { font: 400 16px/1.5 "Source Serif 4", Georgia, serif; margin-top: 28px; color: #a4a3ad; }
 .settings-scroll { overflow-y: auto; overscroll-behavior: contain; min-width: 0; padding: 0 32px; scroll-padding-top: 24px; }
 .settings-section { padding: 26px 0; border-bottom: 1px solid var(--settings-border); }
 .settings-section:last-child { border: none; }
@@ -68,7 +84,7 @@
 .section-heading h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .section-heading h3 > span { color: #d6a985; font: 10px ui-monospace, monospace; margin-right: 10px; }
 .settings-chip { font-size: 9px; letter-spacing: .09em; color: #d9b38f; border: 1px solid #71533d; border-radius: 5px; padding: 4px 7px; background: #c87d3310; }
-.settings-help { color: var(--settings-muted); font-size: 12px; margin: 8px 0 12px; line-height: 1.65; }
+.settings-help { color: var(--settings-muted); font-size: 13px; margin: 8px 0 12px; line-height: 1.65; }
 .settings-caption { color: var(--settings-muted); font-size: 11px; margin: 9px 0 0; }
 .editor-settings textarea, .editor-settings input:not([type=checkbox]), .editor-settings select { background: #11151e; color: var(--settings-text); border: 1px solid var(--settings-input-border); border-radius: 8px; padding: 11px 12px; }
 .editor-settings textarea:hover, .editor-settings input:hover, .editor-settings select:hover { border-color: #74717b; }

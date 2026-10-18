@@ -27,6 +27,8 @@ export default defineConfig({
         ...config.build.rolldownOptions.output,
         codeSplitting: {
           groups: [
+            { name: "masthead-art", test: /\/assets\/morning-banner\.jpg/, priority: 60 },
+            { name: "editorial-fonts", test: /\/assets\/fonts\/.*\.woff2/, priority: 55 },
             { name: "react", test: /\/(?:react|react-dom|scheduler)\//, priority: 40 },
             { name: "compiler", test: /\/sucrase\//, priority: 30 },
             { name: "editor", test: /\/(?:@codemirror|@lezer)\//, priority: 25 },

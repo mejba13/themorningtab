@@ -83,7 +83,7 @@ export function normalizeSocialPulse(raw: Partial<SocialPulseSettings> | undefin
   }
   const topics = parseTopics(raw?.topics ?? []);
   return {
-    enabled: raw?.enabled === true,
+    enabled: typeof raw?.enabled === "boolean" ? raw.enabled : DEFAULT_SOCIAL_PULSE.enabled,
     topics: topics.length ? topics : [...DEFAULT_SOCIAL_PULSE.topics],
     platforms,
     perPlatform: clampPerPlatform(raw?.perPlatform ?? DEFAULT_SOCIAL_PULSE.perPlatform),

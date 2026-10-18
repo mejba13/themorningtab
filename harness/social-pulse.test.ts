@@ -72,7 +72,7 @@ test("blocked platforms and redirects onto blocked hosts never get parsed", asyn
   expect(pulse.items.some((i) => i.platform === "linkedin" || i.platform === "x")).toBe(false);
 });
 
-test("off by default; turned-off platforms are skipped without loading anything", async () => {
+test("explicitly disabled collection and turned-off platforms are skipped without loading anything", async () => {
   const off = fixtureDeps({ settings: { ...fixtureDeps().settings, enabled: false } });
   const pulse = await collectSocialPulse(off);
   expect(off.captured).toEqual([]);

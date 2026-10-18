@@ -54,6 +54,14 @@ try {
   const prompt = page.getByRole("textbox", { name: "Standing instructions applied to every build.", exact: true });
   const save = page.getByRole("button", { name: "Save & rebuild" });
   await open();
+  const fonts = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const dialog = document.querySelector("dialog")!;
+    return { title: getComputedStyle(dialog.querySelector("h2")!).fontFamily,
+      body: getComputedStyle(dialog).fontFamily,
+      loaded: [...document.fonts].filter(font => font.status === "loaded").map(font => font.family) };
+  });
+  check("settings loads editorial title and body fonts", fonts.title.includes("Source Serif 4") && fonts.body.includes("Source Sans 3") && fonts.loaded.includes("Source Serif 4") && fonts.loaded.includes("Source Sans 3"), JSON.stringify(fonts));
   check("new install shows exact newspaper default", await prompt.inputValue() === DEFAULT_SYSTEM_PROMPT);
   check("prompt receives initial focus", await prompt.evaluate((el) => el === document.activeElement));
   await page.keyboard.press("Escape");
@@ -93,7 +101,9 @@ try {
   await page.emulateMedia({ reducedMotion: "reduce" });
   check("reduced motion disables all modal animations", await page.getByRole("dialog").evaluate((dialog) => [dialog, ...dialog.querySelectorAll("*")].every((el) => getComputedStyle(el).animationName === "none")));
   check("rebuild interval disabled when automatic rebuild off", await page.locator(".settings-interval select").isDisabled());
-  check("social settings disabled by default", await page.getByLabel("Topics", { exact: true }).isDisabled() && await page.getByLabel("Items per platform").isDisabled());
+  check("Social Pulse enabled by default", await page.getByLabel("Show the latest posts about my topics").isChecked() && await page.getByLabel("Topics", { exact: true }).isEnabled());
+  await page.getByLabel("Show the latest posts about my topics").uncheck();
+  check("turning off Social Pulse disables inputs", await page.getByLabel("Topics", { exact: true }).isDisabled() && await page.getByLabel("Items per platform").isDisabled());
   await page.getByLabel("Rebuild automatically").check();
   await page.locator(".settings-interval select").selectOption("24");
   await page.getByLabel("Rebuild automatically").uncheck();
@@ -131,6 +141,7 @@ try {
   await store({ apiKey: "sk-ant-fixture-not-a-real-key", homepageData: homepage });
   await open();
   check("custom prompt survives reload", await prompt.inputValue() === saved.systemPrompt);
+  await page.getByLabel("Show the latest posts about my topics").uncheck();
   await prompt.fill("");
   await page.getByPlaceholder("AIza…").fill("");
   await worker.evaluate(async () => { await (globalThis as any).chrome.storage.local.remove("apiKey"); });
@@ -138,6 +149,7 @@ try {
   await page.getByRole("dialog").waitFor({ state: "detached" });
   await store({ apiKey: "sk-ant-fixture-not-a-real-key", homepageData: homepage });
   await open();
+  check("explicit Social Pulse opt-out survives save and reload", !(await page.getByLabel("Show the latest posts about my topics").isChecked()));
   check("cleared YouTube key is removed", !("youtubeApiKey" in await read()));
   check("intentionally cleared prompt stays blank after reload", await prompt.inputValue() === "");
   check("no application console errors", errors.length === 0, errors.join(" | "));

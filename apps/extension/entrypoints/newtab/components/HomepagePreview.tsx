@@ -1,3 +1,5 @@
+import serifFont from "../../../assets/fonts/source-serif-4-latin.woff2?inline";
+import sansFont from "../../../assets/fonts/source-sans-3-latin.woff2?inline";
 import morningBanner from "../../../assets/morning-banner.jpg?inline";
 import { NEWSLETTER_CSS } from "@themorningtab/agent-core";
 import { SandpackLayout, SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
@@ -39,7 +41,10 @@ export function HomepagePreview({ code }: { code: string }) {
     "/App.js": { code },
     "/index.js": { code: INDEX_JS },
     "/public/index.html": { code: INDEX_HTML },
-    "/newsletter.css": { code: `body { margin: 0; } :root { --mt-masthead-art: url("${morningBanner}"); } ${NEWSLETTER_CSS}` },
+    "/newsletter.css": { code: `
+      @font-face { font-family: "Source Serif 4"; src: url("${serifFont}") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+      @font-face { font-family: "Source Sans 3"; src: url("${sansFont}") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+      body { margin: 0; } :root { --mt-masthead-art: url("${morningBanner}"); } ${NEWSLETTER_CSS}` },
   };
 
   return (

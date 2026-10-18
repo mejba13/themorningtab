@@ -28,7 +28,8 @@ terminal, a zine.
 > ends. Your API key stays in the extension's local storage. More detail in
 > [ARCHITECTURE.md](./ARCHITECTURE.md#privacy).
 >
-> **Social Pulse** is off by default. When you turn it on, the extension reads
+> **Social Pulse** is on by default for new settings, with YouTube enabled.
+> Explicitly saved off settings are preserved. When enabled, the extension reads
 > one search page per enabled platform for your topics, in your signed-in
 > browser. It keeps only each post's text, link, author, time and thumbnail
 > link, and sends that list to the Anthropic API. Cookies and session tokens
@@ -104,7 +105,7 @@ addresses (localhost, private IPs, `.local` and `.internal` hosts) are always bl
 **Social Pulse.** Adds the latest posts about your topics (default "AI") from
 YouTube, X, LinkedIn, Pinterest and Instagram, grouped by platform, newest first.
 
-- Turn it on with **Show the latest posts about my topics**. Topics are
+- Toggle it with **Show the latest posts about my topics** (on by default). Topics are
   comma-separated and combined into one search per platform.
 - YouTube is on by default. The other platforms are off by default. They read
   your signed-in session, and their terms restrict automated access, so each
@@ -210,6 +211,12 @@ It does not validate the live Anthropic service.
 Never commit `.env`. It is in `.gitignore`.
 
 ### Newsletter layout
+
+New editions use locally bundled Source Serif 4 for headlines and reading text,
+and Source Sans 3 for section labels, navigation, dates and credits. This follows
+BBC's serif/sans editorial hierarchy using OFL-licensed fonts, not BBC's restricted
+Reith font files. Font licences are included under `apps/extension/assets/fonts/`;
+no font CDN requests are needed at runtime. Unsupported scripts use system fallbacks.
 
 New editions use a shared editorial style: serif masthead and headlines, a lead
 story, two-column briefs, source credits, and a single-column mobile layout.

@@ -31,7 +31,7 @@ test("fresh and legacy blank settings use the newspaper brief without writing st
     const storage = mockStorage(stored === undefined ? {} : { [KEYS.systemPrompt]: stored });
     const settings = await loadSettings();
     expect(settings.systemPrompt).toBe(DEFAULT_SYSTEM_PROMPT);
-    expect(settings.socialPulse.enabled).toBe(false);
+    expect(settings.socialPulse.enabled).toBe(true);
     expect(storage.writes).toEqual([]);
   }
 });
@@ -62,4 +62,19 @@ test("saving another setting does not mark a legacy blank prompt as configured",
   await saveSetting("autoRebuild", false);
   expect(storage.writes).toEqual([{ [KEYS.autoRebuild]: false }]);
   expect((await loadSettings()).systemPrompt).toBe(DEFAULT_SYSTEM_PROMPT);
+});
+
+
+test("Social Pulse defaults on while preserving explicit opt-out and platform choices", async () => {
+  for (const socialPulse of [undefined, {}, { topics: ["Laravel"] }]) {
+    mockStorage({ [KEYS.socialPulse]: socialPulse });
+    expect((await loadSettings()).socialPulse.enabled).toBe(true);
+  }
+  mockStorage({ [KEYS.socialPulse]: { enabled: false, platforms: { youtube: false, x: true } } });
+  const settings = await loadSettings();
+  expect(settings.socialPulse.enabled).toBe(false);
+  expect(settings.socialPulse.platforms.youtube).toBe(false);
+  expect(settings.socialPulse.platforms.x).toBe(true);
+  await saveSetting("socialPulse", { ...settings.socialPulse, enabled: true });
+  expect((await loadSettings()).socialPulse.enabled).toBe(true);
 });
