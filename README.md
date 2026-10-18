@@ -27,6 +27,14 @@ terminal, a zine.
 > content. The agent session and every uploaded page are deleted when each build
 > ends. Your API key stays in the extension's local storage. More detail in
 > [ARCHITECTURE.md](./ARCHITECTURE.md#privacy).
+>
+> **Social Pulse** is on by default for new settings, with YouTube enabled.
+> Explicitly saved off settings are preserved. When enabled, the extension reads
+> one search page per enabled platform for your topics, in your signed-in
+> browser. It keeps only each post's text, link, author, time and thumbnail
+> link, and sends that list to the Anthropic API. Cookies and session tokens
+> are never read or sent. With a YouTube API key, YouTube is searched through
+> the official Data API instead; the key is sent only to Google.
 
 ---
 
@@ -70,7 +78,12 @@ you open.
 Click **⚙️ Settings** on the new tab.
 
 **Instructions.** Anything you write here goes into every build and takes priority
-over the agent's own defaults. This box sets both the content and the look:
+over the agent's own defaults. New installs and previously blank settings start
+with an editable newspaper brief covering AI, your developer stack, security,
+GitHub, Social Pulse, and content ideas. Existing custom instructions stay intact;
+deliberately clearing and saving the field keeps it blank.
+
+This box sets both the content and the look:
 
 | You write | You get |
 | --- | --- |
@@ -88,6 +101,30 @@ sign-in and document hosts. **Save & rebuild** saves the list and applies it to
 history summaries and URLs requested through `getPageHtml`. A page that redirects
 onto a blocked host is dropped before its content is uploaded. Local-network
 addresses (localhost, private IPs, `.local` and `.internal` hosts) are always blocked.
+
+**Social Pulse.** Adds the latest posts about your topics (default "AI") from
+YouTube, X, LinkedIn, Pinterest and Instagram, grouped by platform, newest first.
+
+- Toggle it with **Show the latest posts about my topics** (on by default). Topics are
+  comma-separated and combined into one search per platform.
+- YouTube is on by default. The other platforms are off by default. They read
+  your signed-in session, and their terms restrict automated access, so each
+  toggle shows a risk note. Each build loads at most one page per platform,
+  with no scrolling, clicking, liking or posting.
+- Settings shows each platform's result from the last build: ok, signed out,
+  blocked, failed or skipped. A failed platform never fails the build.
+- Your instructions can still move, restyle or drop the section.
+
+YouTube API key (optional, uses the official API and saves you from page reads):
+
+1. In Google Cloud Console, create or pick a project.
+2. Open [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) and click **Enable**.
+3. Go to [Credentials](https://console.cloud.google.com/apis/credentials), click
+   **Create credentials → API key**, then **Restrict key** to *YouTube Data API v3* only.
+4. Paste it into **YouTube API key** in Settings and click **Save & rebuild**.
+
+Each build makes at most one search call (100 of the default 10,000 daily
+quota units), and results are reused until your rebuild interval passes.
 
 **Model.** Choose which Claude model writes your page:
 
@@ -150,13 +187,52 @@ pnpm dev                 # WXT with hot reload
 pnpm typecheck           # all packages
 pnpm test                # unit tests (no API calls; needs Bun)
 pnpm extension:test      # loads the built extension into headless Chrome (no API calls)
+pnpm extension:newsletter-test # responsive newsletter, dark mode, and every fixture link
+pnpm extension:settings-test  # settings, keyboard and responsive checks (Chrome for Testing; no API calls)
+pnpm extension:social-visual  # Social Pulse screenshots from fixtures (Chrome for Testing; no platform requests)
 
 cp .env.example .env     # add ANTHROPIC_API_KEY, then:
 pnpm agent:run           # a full build against the real API, with fixture history
 pnpm agent:verify        # check the output actually renders
 ```
 
+To verify agent version-conflict recovery without a real API key, start the
+local Postman fixture in one terminal, then run the SDK checks in another:
+
+```bash
+postman mock run postman/mocks/agent-conflict/default.js --port 4900 --no-history
+bun harness/test-agent-conflict.ts
+```
+
+This fixture follows the installed SDK's agent retrieve/update routes and simulates
+409 conflicts, already-applied updates, exhausted retries, and non-conflict errors.
+It does not validate the live Anthropic service.
+
 Never commit `.env`. It is in `.gitignore`.
+
+### Newsletter layout
+
+New editions use locally bundled Source Serif 4 for headlines and reading text,
+and Source Sans 3 for section labels, navigation, dates and credits. This follows
+BBC's serif/sans editorial hierarchy using OFL-licensed fonts, not BBC's restricted
+Reith font files. Font licences are included under `apps/extension/assets/fonts/`;
+no font CDN requests are needed at runtime. Unsupported scripts use system fallbacks.
+
+New editions use a shared editorial style: serif masthead and headlines, a lead
+story, two-column briefs, source credits, and a single-column mobile layout.
+The header uses a locally bundled, AI-generated newspaper-and-sunrise illustration
+(`apps/extension/assets/morning-banner.jpg`) with live, selectable title and date
+text. It stacks the artwork below the text on mobile and retains an ivory panel
+in dark mode. This decorative artwork is separate from sourced story images.
+Dark mode follows the browser preference. Story links open in separate tabs;
+section navigation stays within the edition. Images must come from a read source.
+The generation rules preserve custom standing instructions and never invent
+stories or publication times to fill the layout.
+
+After updating the extension, click **Rebuild** to generate an edition using the
+new layout. Existing saved editions retain their original markup. The newsletter
+browser test uses synthetic content and intercepted destinations, not live news;
+screenshots are written to `/tmp/morningtab-newsletter`.
 
 ### Merging upstream updates
 

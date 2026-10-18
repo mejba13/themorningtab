@@ -5,3 +5,7 @@ export * from "./prompt";
 export * from "./setup";
 export * from "./orchestrator";
 export * from "./site-filter";
+export * from "./social";
+export * from "./social-parsers";
+export * from "./social-pulse";
+export * from "./newsletter-design";

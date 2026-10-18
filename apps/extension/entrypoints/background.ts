@@ -13,24 +13,27 @@ import { AGENT_PORT } from "@/lib/protocol";
  */
 const HEARTBEAT_ALARM = "homepage-heartbeat";
 
-export default defineBackground(() => {
-  const manager = new BuildManager();
+export default defineBackground({
+  type: "module",
+  main() {
+    const manager = new BuildManager();
 
-  browser.runtime.onConnect.addListener((port) => {
-    if (port.name === AGENT_PORT) manager.attach(port);
-  });
+    browser.runtime.onConnect.addListener((port) => {
+      if (port.name === AGENT_PORT) manager.attach(port);
+    });
 
-  // ~1 min is the chrome.alarms floor — fine for a recovery net and the
-  // scheduled rebuild check.
-  browser.alarms.create(HEARTBEAT_ALARM, { periodInMinutes: 1 });
-  browser.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === HEARTBEAT_ALARM) void manager.tick();
-  });
+    // ~1 min is the chrome.alarms floor — fine for a recovery net and the
+    // scheduled rebuild check.
+    browser.alarms.create(HEARTBEAT_ALARM, { periodInMinutes: 1 });
+    browser.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name === HEARTBEAT_ALARM) void manager.tick();
+    });
 
-  browser.runtime.onStartup.addListener(() => void manager.tick());
-  browser.runtime.onInstalled.addListener(() => void manager.tick());
+    browser.runtime.onStartup.addListener(() => void manager.tick());
+    browser.runtime.onInstalled.addListener(() => void manager.tick());
 
-  // On every wake, reattach to an interrupted build (or consider a scheduled
-  // rebuild) immediately rather than waiting for the first alarm.
-  void manager.tick();
+    // On every wake, reattach to an interrupted build (or consider a scheduled
+    // rebuild) immediately rather than waiting for the first alarm.
+    void manager.tick();
+  },
 });

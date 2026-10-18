@@ -1,5 +1,5 @@
 /**
- * Input schemas for the two custom tools. The caps live in the schema, not just
+ * Input schemas for the custom tools. The caps live in the schema, not just
  * the handler, so the model can see the ceiling it is working against.
  */
 
@@ -53,6 +53,13 @@ export const GET_PAGE_HTML_SCHEMA: ToolInputSchema = {
     },
   },
   required: ["urls"],
+};
+
+/** No input: topics and platforms come from the user's settings, not the model. */
+export const GET_SOCIAL_PULSE_SCHEMA: ToolInputSchema = {
+  type: "object",
+  properties: {},
+  required: [],
 };
 
 export const DEFAULTS = {

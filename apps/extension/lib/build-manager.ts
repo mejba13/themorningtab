@@ -44,6 +44,8 @@ export class BuildManager {
   private lastSnapshotAt = 0;
   private snapshotTimer: ReturnType<typeof setTimeout> | null = null;
 
+  constructor(private readonly runBuild: typeof runHomepageBuild = runHomepageBuild) {}
+
   // ---- port lifecycle ------------------------------------------------------
 
   attach(port: Port) {
@@ -138,20 +140,11 @@ export class BuildManager {
   async startBuild(opts: { resume?: boolean } = {}) {
     if (this.running) {
       console.log("[BuildManager] startBuild ignored — a build is already running");
+      this.broadcast({ kind: "snapshot", state: this.state });
       return; // single-flight: a second start just attaches.
     }
 
-    const { apiKey, systemPrompt, model } = await loadSettings();
-    if (!apiKey) {
-      // Manual builds are gated behind the key-setup screen and auto-builds
-      // require a key, so this only happens if the key was removed.
-      console.warn("[BuildManager] startBuild aborted — no API key in storage");
-      const message = "No Anthropic API key found. Add your key and try again.";
-      this.state = { ...INITIAL_BUILD_STATE, phase: "error", error: message };
-      this.broadcast({ kind: "error", message });
-      return;
-    }
-
+    // Acquire before reading storage: wake, alarm, and tab requests can overlap.
     this.running = true;
     this.controller = new AbortController();
     this.state = { ...INITIAL_BUILD_STATE, running: true, phase: "setup" };
@@ -160,6 +153,11 @@ export class BuildManager {
     console.log("[BuildManager] build started", { resume: Boolean(opts.resume) });
 
     try {
+      const { apiKey, systemPrompt, model, socialPulse } = await loadSettings();
+      this.controller.signal.throwIfAborted();
+      if (!apiKey) {
+        throw new Error("No Anthropic API key found. Add your key and try again.");
+      }
       // The key is the user's own, read from local storage — there is no server
       // to hide it behind. See ARCHITECTURE.md → Privacy.
       const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
@@ -168,13 +166,15 @@ export class BuildManager {
         ? await extensionStore.get<string>(KEYS.activeSessionId)
         : undefined;
 
-      const result = await runHomepageBuild({
+      this.controller.signal.throwIfAborted();
+      const result = await this.runBuild({
         client,
         bridge: browserBridge,
         store: extensionStore,
         userSystemPrompt: systemPrompt,
         blockedSites: async () => (await loadSettings()).blockedSites,
         model,
+        socialPulse: socialPulse.enabled,
         resumeSessionId,
         signal: this.controller.signal,
         callbacks: {

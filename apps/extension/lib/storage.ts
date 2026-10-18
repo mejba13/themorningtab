@@ -1,11 +1,20 @@
 import {
   DEFAULT_MODEL,
+  DEFAULT_SOCIAL_PULSE,
+  SOCIAL_PLATFORMS,
+  clampPerPlatform,
+  parseTopics,
   DEFAULT_BLOCKED_SITES,
   MODEL_CHOICES,
   STORAGE_KEYS as AGENT_KEYS,
   type HomepageModel,
   type KVStore,
+  type SocialItem,
+  type SocialPlatform,
+  type SocialPlatformReport,
+  type SocialPulseSettings,
 } from "@themorningtab/agent-core";
+import { DEFAULT_SYSTEM_PROMPT } from "./default-prompt";
 
 /**
  * Everything the extension persists, in one place. All of it lives in
@@ -17,6 +26,7 @@ export const KEYS = {
   ...AGENT_KEYS,
   homepage: "homepageData",
   systemPrompt: "systemPrompt",
+  systemPromptConfigured: "systemPromptConfigured",
   blockedSites: "blockedSites",
   model: "model",
   autoRebuild: "autoRebuild",
@@ -25,7 +35,26 @@ export const KEYS = {
   rebuildIntervalHours: "autoRebuildIntervalHours",
   /** Throttled mirror of the live build state, for tabs that open while the worker sleeps. */
   buildSnapshot: "buildSnapshot",
+  socialPulse: "socialPulse",
+  /** Stored like apiKey. Sent only to www.googleapis.com, never logged or shown to the model. */
+  youtubeApiKey: "youtubeApiKey",
+  /** Per-platform outcome of the last build, for Settings. */
+  socialPulseStatus: "socialPulseStatus",
+  /** YouTube API results, reused within the rebuild interval to save quota. */
+  youtubeCache: "youtubeCache",
 } as const;
+
+export interface SocialPulseStatus {
+  at: string;
+  platforms: Record<SocialPlatform, SocialPlatformReport>;
+}
+
+export interface YouTubeCache {
+  /** Topics the results were fetched for; a topic change invalidates the cache. */
+  signature: string;
+  fetchedAt: string;
+  items: SocialItem[];
+}
 
 export interface Homepage {
   /** The agent's raw TSX source. */
@@ -42,6 +71,23 @@ export interface Settings {
   /** Unset means on — auto-rebuild is opt-out. */
   autoRebuild: boolean;
   rebuildIntervalHours: number | null;
+  socialPulse: SocialPulseSettings;
+  youtubeApiKey: string | null;
+}
+
+/** Fill gaps from defaults, so settings saved by an older version still load. */
+export function normalizeSocialPulse(raw: Partial<SocialPulseSettings> | undefined): SocialPulseSettings {
+  const platforms = { ...DEFAULT_SOCIAL_PULSE.platforms };
+  for (const p of SOCIAL_PLATFORMS) {
+    if (typeof raw?.platforms?.[p] === "boolean") platforms[p] = raw.platforms[p];
+  }
+  const topics = parseTopics(raw?.topics ?? []);
+  return {
+    enabled: typeof raw?.enabled === "boolean" ? raw.enabled : DEFAULT_SOCIAL_PULSE.enabled,
+    topics: topics.length ? topics : [...DEFAULT_SOCIAL_PULSE.topics],
+    platforms,
+    perPlatform: clampPerPlatform(raw?.perPlatform ?? DEFAULT_SOCIAL_PULSE.perPlatform),
+  };
 }
 
 /** The `KVStore` agent-core persists its agent/environment/session IDs through. */
@@ -62,28 +108,42 @@ export async function loadSettings(): Promise<Settings> {
   const s = await browser.storage.local.get([
     KEYS.apiKey,
     KEYS.systemPrompt,
+    KEYS.systemPromptConfigured,
     KEYS.blockedSites,
     KEYS.model,
     KEYS.autoRebuild,
     KEYS.rebuildIntervalHours,
+    KEYS.socialPulse,
+    KEYS.youtubeApiKey,
   ]);
   const model = s[KEYS.model] as string | undefined;
+  const systemPrompt = s[KEYS.systemPrompt];
   return {
     apiKey: (s[KEYS.apiKey] as string | undefined) ?? null,
-    systemPrompt: (s[KEYS.systemPrompt] as string | undefined) ?? "",
+    // Legacy blanks adopt the brief; deliberate edits, including clearing it, stay verbatim.
+    systemPrompt: typeof systemPrompt === "string" && (systemPrompt.trim() || s[KEYS.systemPromptConfigured] === true)
+      ? systemPrompt
+      : DEFAULT_SYSTEM_PROMPT,
     blockedSites: (s[KEYS.blockedSites] as string[] | undefined) ?? [...DEFAULT_BLOCKED_SITES],
     // Fall back if a stored model is no longer offered.
     model: MODEL_CHOICES.find((m) => m.id === model)?.id ?? DEFAULT_MODEL,
     autoRebuild: s[KEYS.autoRebuild] !== false,
     rebuildIntervalHours: (s[KEYS.rebuildIntervalHours] as number | undefined) ?? null,
+    socialPulse: normalizeSocialPulse(s[KEYS.socialPulse] as Partial<SocialPulseSettings> | undefined),
+    youtubeApiKey: (s[KEYS.youtubeApiKey] as string | undefined) || null,
   };
 }
 
-export async function saveSetting<K extends "apiKey" | "systemPrompt" | "blockedSites" | "model" | "autoRebuild" | "rebuildIntervalHours">(
+export async function saveSetting<
+  K extends "apiKey" | "systemPrompt" | "blockedSites" | "model" | "autoRebuild" | "rebuildIntervalHours" | "socialPulse" | "youtubeApiKey",
+>(
   key: K,
   value: Settings[K],
 ): Promise<void> {
-  await browser.storage.local.set({ [KEYS[key]]: value });
+  await browser.storage.local.set({
+    [KEYS[key]]: value,
+    ...(key === "systemPrompt" ? { [KEYS.systemPromptConfigured]: true } : {}),
+  });
 }
 
 export async function loadHomepage(): Promise<Homepage | undefined> {

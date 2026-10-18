@@ -15,6 +15,7 @@ interface ScrapeOptions {
   maxRetries?: number; // Maximum number of retry attempts
   retryDelay?: number; // Initial retry delay in ms
   timeout?: number; // Maximum time to wait for a page in ms
+  injectTimeout?: number; // Maximum time for the in-page script to return, in ms
   concurrentTabs?: number; // Number of tabs to process concurrently
 }
 
@@ -23,6 +24,7 @@ const DEFAULT_OPTIONS: Required<ScrapeOptions> = {
   maxRetries: 3,
   retryDelay: 1000, // 1 second initial retry delay
   timeout: 30000, // 30 seconds timeout
+  injectTimeout: 45000, // the in-page scroll is budgeted at 10s; this is the hard stop
   concurrentTabs: 3, // Process up to 3 tabs at once
 };
 
@@ -80,8 +82,23 @@ function cleanHtmlForLLM(html: string) {
   });
 }
 
+export class TimeoutError extends Error {}
+
+/**
+ * `executeScript` never settles while the page script is still running (a scroll
+ * that won't end, a blocking alert()). One hung page would leave the agent's
+ * tool call unanswered and the build stuck forever, so every injection is bounded.
+ */
+export function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new TimeoutError(`${what} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
+}
+
 /** Scrape in a separate unfocused window so tabs don't flash in front of the user. */
-async function createScraperWindow(): Promise<number> {
+export async function createScraperWindow(): Promise<number> {
   const win = await browser.windows.create({
     focused: false,
     state: "normal",
@@ -125,10 +142,14 @@ async function scrapeUrl(
     while (retryCount <= opts.maxRetries && !result) {
       try {
         // Scrolls to trigger lazy content, then returns { title, html }.
-        const injectionResults = await browser.scripting.executeScript({
-          target: { tabId: tab.id! },
-          files: ["/content-scripts/scraper.js"],
-        });
+        const injectionResults = await withTimeout(
+          browser.scripting.executeScript({
+            target: { tabId: tab.id! },
+            files: ["/content-scripts/scraper.js"],
+          }),
+          opts.injectTimeout,
+          `Reading ${url}`
+        );
 
         if (
           injectionResults &&
@@ -145,6 +166,8 @@ async function scrapeUrl(
         }
       } catch (error) {
         console.warn(`Attempt ${retryCount + 1} failed for ${url}:`, error);
+        // The page is still busy with the last injection; another one would hang too.
+        if (error instanceof TimeoutError) break;
 
         if (retryCount < opts.maxRetries) {
           // Wait before retry with exponential backoff
@@ -220,7 +243,7 @@ export async function scrapeUrls(
   return { pages, failed };
 }
 
-async function waitForTabLoad(
+export async function waitForTabLoad(
   tabId: number,
   timeout: number
 ): Promise<boolean> {

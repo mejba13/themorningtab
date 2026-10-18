@@ -20,6 +20,7 @@ export function ApiKeySetup({ onSave }: { onSave: (key: string) => void }) {
         placeholder="sk-ant-..."
         style={{
           width: "100%",
+          boxSizing: "border-box",
           padding: 12,
           fontSize: 14,
           borderRadius: 4,
