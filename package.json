@@ -18,7 +18,9 @@
     "agent:verify": "bun harness/verify-homepage.ts",
     "agent:resume-test": "bun harness/test-resume.ts crash && bun harness/test-resume.ts resume",
     "agent:retention": "bun harness/check-retention.ts",
+    "extension:newsletter-test": "bun harness/test-newsletter.ts",
     "extension:test": "bun harness/test-extension.ts",
+    "extension:settings-test": "bun harness/test-settings.ts",
     "extension:social-visual": "bun harness/test-social-pulse-visual.ts"
   },
   "devDependencies": {

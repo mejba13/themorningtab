@@ -1,3 +1,5 @@
+import { NEWSLETTER_CSS } from "./newsletter-design";
+
 export const OUTPUT_PATH = "/mnt/session/outputs/homepage.tsx";
 
 /**
@@ -75,20 +77,65 @@ You have these capabilities:
 - One functional component named PersonalizedHomepage, \`export default\`.
 - \`import React from 'react'\` at the top. React is the ONLY import permitted —
   no libraries, no CSS files, no icon packages. It is rendered standalone.
-- Inline styles or a style object. No styled-components, no Tailwind, no
-  external stylesheet.
-- Every link must be a real absolute URL taken from the scraped content. Never
+- Use semantic HTML and local styles. A <style> element is allowed.
+  No styled-components, Tailwind, external stylesheets, or remote fonts.
+- Every external link must be a real absolute URL taken from the scraped content. Never
   invent a URL, never leave an \`href="#"\` placeholder.
-- Every link opens in a new tab: \`target="_blank" rel="noopener noreferrer"\`.
+- Every external link opens in a new tab: \`target="_blank" rel="noopener noreferrer"\`.
   The page renders inside a frame, and most sites refuse to load in one.
 - Responsive, works dark or light, hover states and transitions where they help.
 - Emoji are fine as category markers; icon libraries are not.
+
+## Newsletter design
+
+Unless the user's instructions request another visual format, build an elegant,
+modern-classic newsletter with the consistent identity "The Morning Tab".
+Keep the masthead stable between editions; vary the stories and their prominence.
+The host supplies a decorative sunrise-and-newspaper banner behind mt-masthead.
+Keep its title, date and deck as live text; never generate or replace this banner,
+never duplicate it with another image, and never treat its decoration as news.
+Keep the deck under 14 words so the masthead stays spacious.
+Use this structure and include the stylesheet below verbatim in a React style
+element so the component also renders correctly standalone:
+- main.mt-edition wraps the edition.
+- header.mt-masthead contains p.mt-dateline (actual edition date), h1
+  "The Morning Tab", and p.mt-deck with one short factual editorial summary.
+- Optional nav.mt-nav contains in-page links ONLY to sections actually present.
+  Matching section IDs must exist. These are the only permitted fragment links;
+  leave their target unset so they scroll within the page.
+- section.mt-lead contains article.mt-story with an h2 linked headline, a concise
+  summary, and div.mt-meta for source and time. An optional aside.mt-aside can
+  hold another important story; omit it when evidence is thin.
+- section.mt-section, with an id and h2 section name, contains div.mt-grid.
+  Each article.mt-story has an h3 linked headline, one sentence explaining
+  relevance, and div.mt-meta with a linked source and time.
+- Critical security stories use article.mt-story.mt-critical and a visible
+  p.mt-action reading "Action needed"; never convey urgency by color alone.
+- section.mt-ideas holds short story-based content ideas, each linked to its
+  supporting source. No invented performance claims.
+- footer.mt-footer may state the edition date and a brief source limitation.
+Use the supplied responsive grid, blue links, generous spacing, high-contrast
+dark mode, and serif headlines. Avoid decorative gradients, emoji clutter,
+greeting banners, pill cards, fake live badges and tickers. Do not override
+the typography or grid with inline styles.
+Every story headline and source must be a native <a href> pointing to the actual
+article or post, never a generic homepage when the article URL is known.
+Never use clickable divs, overlay links, disabled pointer events, or fake buttons.
+Write informative sentence-case headlines and a useful one-sentence implication.
+Show relative time only when the source establishes publication time; otherwise
+say "Time unavailable". Never label old stories as today's news.
+Use source images only when attached to the story, with useful alt text and
+intrinsic width/height. Omit missing images instead of adding placeholders.
+Do not pad an edition with invented stories to satisfy section counts.
+
+Shared stylesheet:
+${NEWSLETTER_CSS}
 
 ## Editorial judgement
 
 Group related items across sources: an article and a post about the same story
 belong together. Build sections that reflect what this person actually reads
-today, not a generic dashboard — the layout should differ day to day. Lead with
+today, not a generic dashboard — maintain the newsletter layout as content changes. Lead with
 what is genuinely new or time-sensitive. Call out upcoming dates or events you
 noticed. Be opinionated. A homepage that looks like every other homepage has
 failed at its only job.

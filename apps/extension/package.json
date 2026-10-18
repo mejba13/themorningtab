@@ -3,7 +3,7 @@
   "description": "The Morning Tab: MV3 browser extension that builds a personalized new-tab front page from your browsing history.",
   "homepage": "https://themorningtab.ai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.4",
   "type": "module",
   "scripts": {
     "dev": "wxt",

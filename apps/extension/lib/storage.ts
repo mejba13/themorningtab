@@ -14,6 +14,7 @@ import {
   type SocialPlatformReport,
   type SocialPulseSettings,
 } from "@themorningtab/agent-core";
+import { DEFAULT_SYSTEM_PROMPT } from "./default-prompt";
 
 /**
  * Everything the extension persists, in one place. All of it lives in
@@ -25,6 +26,7 @@ export const KEYS = {
   ...AGENT_KEYS,
   homepage: "homepageData",
   systemPrompt: "systemPrompt",
+  systemPromptConfigured: "systemPromptConfigured",
   blockedSites: "blockedSites",
   model: "model",
   autoRebuild: "autoRebuild",
@@ -106,6 +108,7 @@ export async function loadSettings(): Promise<Settings> {
   const s = await browser.storage.local.get([
     KEYS.apiKey,
     KEYS.systemPrompt,
+    KEYS.systemPromptConfigured,
     KEYS.blockedSites,
     KEYS.model,
     KEYS.autoRebuild,
@@ -114,9 +117,13 @@ export async function loadSettings(): Promise<Settings> {
     KEYS.youtubeApiKey,
   ]);
   const model = s[KEYS.model] as string | undefined;
+  const systemPrompt = s[KEYS.systemPrompt];
   return {
     apiKey: (s[KEYS.apiKey] as string | undefined) ?? null,
-    systemPrompt: (s[KEYS.systemPrompt] as string | undefined) ?? "",
+    // Legacy blanks adopt the brief; deliberate edits, including clearing it, stay verbatim.
+    systemPrompt: typeof systemPrompt === "string" && (systemPrompt.trim() || s[KEYS.systemPromptConfigured] === true)
+      ? systemPrompt
+      : DEFAULT_SYSTEM_PROMPT,
     blockedSites: (s[KEYS.blockedSites] as string[] | undefined) ?? [...DEFAULT_BLOCKED_SITES],
     // Fall back if a stored model is no longer offered.
     model: MODEL_CHOICES.find((m) => m.id === model)?.id ?? DEFAULT_MODEL,
@@ -133,7 +140,10 @@ export async function saveSetting<
   key: K,
   value: Settings[K],
 ): Promise<void> {
-  await browser.storage.local.set({ [KEYS[key]]: value });
+  await browser.storage.local.set({
+    [KEYS[key]]: value,
+    ...(key === "systemPrompt" ? { [KEYS.systemPromptConfigured]: true } : {}),
+  });
 }
 
 export async function loadHomepage(): Promise<Homepage | undefined> {

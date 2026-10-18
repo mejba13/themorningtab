@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { HOMEPAGE_SYSTEM_PROMPT } from "./prompt";
 import { GET_HISTORY_SCHEMA, GET_PAGE_HTML_SCHEMA, GET_SOCIAL_PULSE_SCHEMA } from "./schemas";
 import type { KVStore } from "./types";
@@ -146,16 +146,28 @@ export async function ensureAgent(
   const metadata = { config: await fingerprint(definition) };
   const key = agentIdKey(model);
   const cached = await store.get<string>(key);
-  const existing = cached
+  let existing = cached
     ? await client.beta.agents.retrieve(cached).catch(() => null)
     : null;
   if (existing) {
     // Outside the retrieve fallback on purpose: a failed update should surface,
     // not quietly orphan this agent and create a new one every build.
-    if (existing.metadata?.config !== metadata.config) {
-      await client.beta.agents.update(existing.id, { version: existing.version, ...definition, metadata });
+    for (let attempt = 0; ; attempt++) {
+      if (existing.metadata?.config === metadata.config) return existing.id;
+      try {
+        await client.beta.agents.update(existing.id, {
+          version: existing.version, ...definition, metadata,
+        }, { maxRetries: 0 });
+        return existing.id;
+      } catch (error) {
+        // Retrying the same version cannot resolve an optimistic-lock conflict.
+        // Another client may already have applied this exact definition.
+        if (!(error instanceof Anthropic.APIError) || error.status !== 409 || attempt >= 2) {
+          throw error;
+        }
+        existing = await client.beta.agents.retrieve(existing.id);
+      }
     }
-    return existing.id;
   }
   if (cached) await store.remove(key);
 

@@ -24,7 +24,7 @@ const STATUS_STYLE: Record<SocialStatus, { label: string; color: string; bg: str
   skipped: { label: "skipped", color: "#666", bg: "#f2f2f2" },
 };
 
-const label = { display: "block", color: "#333", fontSize: 14 } as const;
+const label = { display: "block", color: "var(--settings-text)", fontSize: 14 } as const;
 const input = {
   width: "100%",
   boxSizing: "border-box",
@@ -32,9 +32,9 @@ const input = {
   padding: "8px 10px",
   fontSize: 14,
   borderRadius: 4,
-  border: "1px solid #ddd",
+  border: "1px solid var(--settings-input-border)",
 } as const;
-const note = { color: "#888", fontSize: 12, margin: "4px 0 0" } as const;
+const note = { color: "var(--settings-muted)", fontSize: 12, margin: "4px 0 0" } as const;
 
 export function SocialPulseSettings({
   draft,
@@ -46,11 +46,11 @@ export function SocialPulseSettings({
   lastStatus: SocialPulseStatus | null;
 }) {
   const set = <K extends keyof SocialPulseDraft>(key: K, value: SocialPulseDraft[K]) => onChange({ ...draft, [key]: value });
-  const muted = draft.enabled ? 1 : 0.5;
+  const muted = draft.enabled ? 1 : 0.7;
 
   return (
-    <fieldset style={{ border: "1px solid #e4e4e4", borderRadius: 6, padding: "12px 14px 14px", marginTop: 20, minWidth: 0 }}>
-      <legend style={{ padding: "0 6px", color: "#333", fontWeight: 600, fontSize: 14 }}>Social Pulse</legend>
+    <fieldset className="settings-social" style={{ border: "none", borderRadius: 6, padding: 0, margin: 0, minWidth: 0 }}>
+      <legend style={{ padding: "0 6px", color: "var(--settings-text)", fontWeight: 600, fontSize: 14 }}>Social Pulse</legend>
       <label style={{ ...label, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
         <input type="checkbox" checked={draft.enabled} onChange={(e) => set("enabled", e.target.checked)} />
         Show the latest posts about my topics
@@ -75,7 +75,7 @@ export function SocialPulseSettings({
             const status = lastStatus?.platforms[p];
             const badge = status ? STATUS_STYLE[status.status] : null;
             return (
-              <div key={p} style={{ padding: "8px 0", borderTop: "1px solid #f0f0f0" }}>
+              <div key={p} style={{ padding: "8px 0", borderTop: "1px solid var(--settings-border)" }}>
                 <label style={{ ...label, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexWrap: "wrap" }}>
                   <input
                     type="checkbox"
@@ -107,7 +107,7 @@ export function SocialPulseSettings({
         )}
 
         <label style={{ ...label, marginTop: 12 }}>
-          YouTube API key <span style={{ color: "#888", fontWeight: 400 }}>(optional)</span>
+          YouTube API key <span style={{ color: "var(--settings-muted)", fontWeight: 400 }}>(optional)</span>
           <input
             type="password"
             autoComplete="off"

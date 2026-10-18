@@ -158,7 +158,7 @@ export default function App() {
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
-      <div style={{ position: "fixed", top: 20, right: 20, zIndex: 999, display: "flex", gap: 8 }}>
+      <div className="edition-toolbar">
         {state.running ? (
           // A build is running in the background (from here, another tab, or the
           // scheduled rebuild). Let the user watch it without losing this page.
@@ -231,6 +231,7 @@ export default function App() {
 
       {showSettings && (
         <SettingsModal
+          isBuilding={state.running}
           initialPrompt={systemPrompt}
           blockedSites={blockedSites}
           model={model}
